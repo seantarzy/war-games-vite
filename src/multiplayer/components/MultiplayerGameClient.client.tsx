@@ -4,17 +4,18 @@ import useGameChannelWebsocket from "../hooks/useGameChannelWebsocket";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { Card } from "../types";
 import { dealCard } from "../../api/multiplayer/methods";
-import { useSpring, animated } from "@react-spring/web";
+import { animated } from "@react-spring/web";
 import { BaseballButton } from "./ui_components/Button";
 import { PlayerCard } from "./ui_components/PlayerCard";
 import RainingDeck, { TIME_TO_MAKE_IT_RAIN } from "./ui_components/RainingDeck";
-import { destroyGame } from "../../api/game/methods";
 import { destroySession } from "../../api/sessions/methods";
+import { useMakeItRain } from "../hooks/useMakeItRain";
+import { useHandleGameScore } from "../hooks/useHandleGameScore";
+import { useCardSlideSpring } from "../hooks/useCardSlideSpring";
 
-const CARD_SLIDE_TIME_DURATION: number = 1000;
+const CARD_SLIDE_TIME_DURATION: number = 800;
 
 const CARD_BATTLE_TIME_DURATION: number = 1500;
-type XYPos = { x: number; y: number };
 export default function MultiplayerGame({ gameId }: { gameId: number }) {
   const [currentPlayerSessionId] = useLocalStorage("sessionId", 0);
   const [sessionType] = useLocalStorage("sessionType", null);
@@ -22,17 +23,6 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   const [cardSlideReady, setcardSlideReady] = useState(false);
   const [oppCardInMiddle, setOppCardInMiddle] = useState(false);
   const [currentCardInMiddle, setCurrentCardInMiddle] = useState(false);
-  const [currentPosition, setCurrentPosition] = useState<XYPos>({ x: 0, y: 0 });
-
-  const [props, set] = useSpring(() => ({
-    to: {
-      transform: `translate(${currentPosition.x}px, ${currentPosition.y}px)`,
-    },
-    from: {
-      transform: `translate(${currentPosition.x}px, ${currentPosition.y}px)`,
-    },
-    config: { tension: 170, friction: 26 },
-  }));
 
   const [cardDrawn, setCardDrawn] = useState<Card | null>(null);
   const {
@@ -41,7 +31,6 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     currentSessionScore,
     oppSessionScore,
     invalidateCardRound,
-    invalidGame,
   } = useGameChannelWebsocket({
     gameId: gameId,
     currentPlayerSessionId: currentPlayerSessionId,
@@ -49,12 +38,9 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   });
 
   // state variables for holding scores when we're ready to show them
-  const [readyCurrentScore, setReadyCurrentScore] = useState<number | null>(
-    currentSessionScore
-  );
-  const [readyOppScore, setReadyOppScore] = useState<number | null>(
-    oppSessionScore
-  );
+  // 'current session' is whoever is currently interacting with the client
+  // 'opp session' is the other player
+
   const drawRando = () => {
     getRandomPlayer().then((card: Card) => {
       setCardDrawn(card);
@@ -64,7 +50,7 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   const [oppFlipped, setOppFlipped] = useState(true);
   const [currentFlipped, setCurrentFlipped] = useState(true);
 
-  const [makeItRain, setMakeItRain] = useState(false);
+  const { makeItRain, toggleMakeItRain } = useMakeItRain(TIME_TO_MAKE_IT_RAIN);
 
   let opponentReady = !!oppSessionCard;
   let currentReady = !!currentSessionCard;
@@ -74,54 +60,25 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     !!oppCardInMiddle &&
     !!currentCardInMiddle;
 
+  const { readyCurrentScore, readyOppScore } = useHandleGameScore(
+    currentSessionScore,
+    oppSessionScore,
+    battleReady
+  );
   if (currentPlayerSessionId === 0) {
     console.error("No session id found");
   }
-
-  useEffect(() => {
-    if (invalidGame) {
-      window.alert("The game has been invalidated. Exiting game.");
-      destroyGame(gameId);
-      window.localStorage.clear();
-      window.location.href = "/"; // Redirect to a different page
-    }
-  }, [invalidGame]); // This ensures the effect runs only when invalidGame changes
 
   const sendMove = () => {
     if (!cardDrawn) {
       return;
     }
-
     const playerId = parseInt(cardDrawn.id);
 
     dealCard(gameId, currentPlayerSessionId, playerId).then((res) => {
       setcardSlideReady(true);
     });
   };
-
-  useEffect(() => {
-    if (currentSessionScore && battleReady) {
-      setReadyCurrentScore(currentSessionScore);
-    }
-  }, [currentSessionScore, battleReady]);
-
-  useEffect(() => {
-    setMakeItRain(true);
-  }, []);
-
-  useEffect(() => {
-    if (makeItRain) {
-      setTimeout(() => {
-        setMakeItRain(false);
-      }, TIME_TO_MAKE_IT_RAIN);
-    }
-  }, [makeItRain]);
-
-  useEffect(() => {
-    if (oppSessionScore && battleReady) {
-      setReadyOppScore(oppSessionScore);
-    }
-  }, [oppSessionScore, battleReady]);
 
   useEffect(() => {
     if (opponentReady) {
@@ -133,16 +90,21 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
 
   useEffect(() => {
     if (currentReady) {
+      let tomeoutId: number;
       setTimeout(() => {
         setCurrentCardInMiddle(true);
       }, CARD_SLIDE_TIME_DURATION);
+
+      return () => {
+        clearTimeout(tomeoutId);
+      };
     }
   }, [currentReady]);
 
   useEffect(() => {
     if (battleReady) {
-      let tomeoutId;
-      let secondTimeoutId;
+      let tomeoutId: number;
+      let secondTimeoutId: number;
       tomeoutId = setTimeout(() => {
         secondTimeoutId = setTimeout(() => {
           setOppCardInMiddle(false);
@@ -151,32 +113,23 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
           setCardDrawn(null);
           setCurrentCardInMiddle(false);
           setOppFlipped(true);
-          setMakeItRain(true);
+          toggleMakeItRain();
         }, CARD_BATTLE_TIME_DURATION);
       }, CARD_SLIDE_TIME_DURATION);
+
+      return () => {
+        clearTimeout(tomeoutId);
+        clearTimeout(secondTimeoutId);
+      };
     }
   }, [battleReady]);
 
-  const currentSlideIn = useSpring({
-    to: {
-      transform: cardSlideReady
-        ? "translate(-30vw, -21vh)" // Moves the card to the center of the screen
-        : "translate(0vw, 0vh)", // Returns the card to its original position
-    },
-    from: { transform: "translate(0vw, 0vh)" },
-    config: { duration: CARD_SLIDE_TIME_DURATION },
-  });
+  // slide baby slide
 
-  const opponentSlideIn = useSpring({
-    to: {
-      transform: oppSessionCard
-        ? "translate(30vw, 12vh)" // Moves the card to the center for the animation
-        : "translate(0vw, 0vh)", // Returns the card to its original position once the animation is done
-    },
-    from: { transform: "translate(0vw, 0vh)" },
-    config: { duration: CARD_SLIDE_TIME_DURATION },
-    // Only start the animation if the opponent's card is being sent (oppCardInMiddle is true) and the battle isn't ready
-    reset: !oppCardInMiddle,
+  const { currentSlideIn, opponentSlideIn } = useCardSlideSpring({
+    currentReady: cardSlideReady,
+    opponentReady: !!oppSessionCard,
+    timeToSlide: CARD_SLIDE_TIME_DURATION,
   });
 
   useEffect(() => {

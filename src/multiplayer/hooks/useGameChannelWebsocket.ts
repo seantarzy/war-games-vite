@@ -22,7 +22,6 @@ const useGameChannelWebsocket = ({
   oppSessionScore: number;
   invalidateCardRound: () => void;
   exitLobby: () => void;
-  invalidGame: boolean;
 } => {
   const [websocket, setWebsocket] = useState<WebSocket | null>(null);
   const [gameReady, setGameReady] = useState(false);
@@ -42,11 +41,10 @@ const useGameChannelWebsocket = ({
 
   const [roundWinner, setRoundWinner] = useState<boolean | "tie" | null>(null);
 
+  const [gameWinner, setGameWinner] = useState<string | null>(null);
   const [oppSessionCard, setOppSessionCard] = useState<Card | null>(null);
 
   const battleReady = currentSessionCard && oppSessionCard ? true : false;
-
-  const [invalidGame, setInvalidGame] = useState(false);
 
   const handleCardPlayed = (message: any) => {
     // when we know it's the current session that played, we animate current sessions card sliding face up to the center
@@ -94,6 +92,17 @@ const useGameChannelWebsocket = ({
         setRoundWinner(false);
     }
   };
+  function handleGameWinner(message: any) {
+    console.log("Game winner is", message.winner);
+    setGameWinner(message.winner);
+  }
+
+  function handleInvalidGame() {
+    setGameReady(false);
+    window.alert("The game has been invalidated. Exiting game.");
+    window.localStorage.clear();
+    window.location.href = "/"; // Redirect home
+  }
 
   function exitLobby() {
     setGameReady(false);
@@ -145,8 +154,12 @@ const useGameChannelWebsocket = ({
                 setGameStarted(true);
                 break;
               case "invalid_game":
-                setInvalidGame(true);
+                handleInvalidGame();
                 break;
+              case "game_winner":
+                handleGameWinner(message);
+                break;
+
               // Add more cases as needed
             }
           }
@@ -181,7 +194,6 @@ const useGameChannelWebsocket = ({
     oppSessionScore,
     invalidateCardRound,
     exitLobby,
-    invalidGame,
   };
 };
 
