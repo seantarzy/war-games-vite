@@ -11,7 +11,7 @@ export const useHandleGameScore = (
   });
 
   useEffect(() => {
-    if (currentSessionScore && battleReady) {
+    if ((currentSessionScore || oppSessionScore) && battleReady) {
       setGameScore({ currentSessionScore, oppSessionScore });
     }
   }, [currentSessionScore, oppSessionScore, battleReady]);

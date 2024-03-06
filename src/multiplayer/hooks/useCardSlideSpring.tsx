@@ -24,7 +24,7 @@ export const useCardSlideSpring = ({
     config: { duration: timeToSlide },
     onResolve(result, _ctrl, _item) {
       if (result && result.finished) {
-        console.log("result", result);
+        // console.log("result", result);
       }
     },
   });

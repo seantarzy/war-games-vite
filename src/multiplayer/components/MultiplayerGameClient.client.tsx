@@ -12,7 +12,7 @@ import { destroySession } from "../../api/sessions/methods";
 import { useMakeItRain } from "../hooks/useMakeItRain";
 import { useHandleGameScore } from "../hooks/useHandleGameScore";
 import { useCardSlideSpring } from "../hooks/useCardSlideSpring";
-
+import ScoreIcon from "../../assets/war-games-score-icon.png";
 const CARD_SLIDE_TIME_DURATION: number = 800;
 
 const CARD_BATTLE_TIME_DURATION: number = 1500;
@@ -42,7 +42,7 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   // 'opp session' is the other player
 
   const drawRando = () => {
-    getRandomPlayer().then((card: Card) => {
+    getRandomPlayer(gameId, currentPlayerSessionId).then((card: Card) => {
       setCardDrawn(card);
     });
   };
@@ -70,11 +70,16 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   }
 
   const sendMove = () => {
-    if (!cardDrawn) {
+    if (!cardDrawn || !currentPlayerSessionId || !gameId) {
       return;
     }
     const playerId = parseInt(cardDrawn.id);
 
+    // i dont know why, but when:
+    // 1. we are draw a card
+    // 2. the other player draws a card and deals it
+    // 3. we send the card we drew
+    // 4. we get an error saying we're trying to hit a route that doesn't exist (get deal_card)
     dealCard(gameId, currentPlayerSessionId, playerId).then((res) => {
       setcardSlideReady(true);
     });
@@ -211,9 +216,21 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
 
   function ScoreBoard() {
     return (
-      <div className="bg-black rounded text-lg justify-center w-1/2">
-        <div>Your score: {readyCurrentScore}</div>
-        <div>Opponent score: {readyOppScore}</div>
+      <div className="bg-slate-950 text-lg justify-center w-1/2 md:w-2/5 m-2 rounded-lg">
+        <div className="flex justify-between border-b-2 p-2 md:p-4 h-16 md:h-20 w-full items-center">
+          <div className="flex h-full w-full items-center gap-2">
+            <img src={ScoreIcon} alt="score icon" className="h-4/5" />
+            <div className="text-xl">Your Score</div>
+          </div>
+          <div className="mr-4 text-xl">{readyCurrentScore}</div>
+        </div>
+        <div className="flex justify-between p-2 md:p-4 h-16 md:h-20 w-full items-center">
+          <div className="flex h-full w-full items-center gap-2">
+            <img src={ScoreIcon} alt="score icon" className="h-4/5" />
+            <div className="text-xl">Opponent Score</div>
+          </div>
+          <div className="mr-4 text-xl">{readyOppScore}</div>
+        </div>
       </div>
     );
   }
@@ -244,10 +261,12 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     return (
       <BaseballButton
         onClick={() => {
-          window.alert(
+          const confirmExit = window.confirm(
             "Are you sure you want to exit? This will end the game."
           );
-          exitGame();
+          if (confirmExit) {
+            exitGame();
+          }
         }}
         disabled={false}
         className="w-24 h-12"
@@ -269,8 +288,8 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
         {/* battle field */}
         <BattleField />
         <div>{battleReady ? <div id="battle-field"></div> : null}</div>
-        <div className="fixed bottom-0 flex justify-between w-full">
-          <div className="self-end m-8">
+        <div className="fixed bottom-0 flex justify-right md:justify-between w-full">
+          <div className="hidden md:top-0 md:relative md:block md:self-end md:m-8">
             <ExitButton />
           </div>
           <div className="self-end fkex-1 right-0">
