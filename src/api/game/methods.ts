@@ -5,3 +5,13 @@ export const destroyGame = async (gameId: number) => {
     method: "DELETE",
   });
 };
+
+export const restartGame = async (gameId: number, session_id: number) => {
+  fetch(`${baseUrl}/games/${gameId}/restart`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ session_id }),
+  });
+};

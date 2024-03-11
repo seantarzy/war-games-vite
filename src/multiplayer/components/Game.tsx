@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useMemo, useRef, memo } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { getRandomPlayer } from "../../api/players/methods";
 import useGameChannelWebsocket from "../hooks/useGameChannelWebsocket";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { Card } from "../types";
-import { dealCard } from "../../api/multiplayer/methods";
+import {
+  dealCard,
+  getCurrentSessionsState,
+} from "../../api/multiplayer/methods";
 import { animated } from "@react-spring/web";
 import { BaseballButton } from "./ui_components/Button";
 import { PlayerCard } from "./ui_components/PlayerCard";
@@ -13,25 +16,29 @@ import { useMakeItRain } from "../hooks/useMakeItRain";
 import { useHandleGameScore } from "../hooks/useHandleGameScore";
 import { useCardSlideSpring } from "../hooks/useCardSlideSpring";
 import ScoreIcon from "../../assets/war-games-score-icon.png";
+import GameOverModal from "../../shared/components/GameOverModal";
+import { AnimatedText } from "./ui_components/AnimationText";
+import { restartGame } from "../../api/game/methods";
 const CARD_SLIDE_TIME_DURATION: number = 800;
 
 const CARD_BATTLE_TIME_DURATION: number = 1500;
 export default function MultiplayerGame({ gameId }: { gameId: number }) {
   const [currentPlayerSessionId] = useLocalStorage("sessionId", 0);
   const [sessionType] = useLocalStorage("sessionType", null);
-
+  const [gameOverModelOpen, setGameOverModelOpen] = useState(false);
   const [cardSlideReady, setcardSlideReady] = useState(false);
   const [oppCardInMiddle, setOppCardInMiddle] = useState(false);
   const [currentCardInMiddle, setCurrentCardInMiddle] = useState(false);
-
+  const [animatedText, setAnimatedText] = useState("");
   const [cardDrawn, setCardDrawn] = useState<Card | null>(null);
   const {
     currentSessionCard,
     oppSessionCard,
-    currentSessionScore,
-    oppSessionScore,
     invalidateCardRound,
+    roundWinner,
+    gamewinner,
   } = useGameChannelWebsocket({
+    setCardDrawn,
     gameId: gameId,
     currentPlayerSessionId: currentPlayerSessionId,
     sessionType: sessionType,
@@ -60,9 +67,9 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     !!oppCardInMiddle &&
     !!currentCardInMiddle;
 
-  const { readyCurrentScore, readyOppScore } = useHandleGameScore(
-    currentSessionScore,
-    oppSessionScore,
+  const { myScore, oppScore } = useHandleGameScore(
+    gameId,
+    currentPlayerSessionId,
     battleReady
   );
   if (currentPlayerSessionId === 0) {
@@ -74,16 +81,31 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
       return;
     }
     const playerId = parseInt(cardDrawn.id);
-
-    // i dont know why, but when:
-    // 1. we are draw a card
-    // 2. the other player draws a card and deals it
-    // 3. we send the card we drew
-    // 4. we get an error saying we're trying to hit a route that doesn't exist (get deal_card)
     dealCard(gameId, currentPlayerSessionId, playerId).then((res) => {
       setcardSlideReady(true);
     });
   };
+
+  useEffect(() => {
+    getCurrentSessionsState(gameId).then((res) => {
+      const session1 = res.session1;
+      const session2 = res.session2;
+      const mySession =
+        session1.id === currentPlayerSessionId ? session1 : session2;
+      if (mySession.card) {
+        setCardDrawn(mySession.card);
+      }
+      if (mySession.card && mySession.dealt) {
+        setcardSlideReady(true);
+      }
+    });
+  }, [gameId]);
+
+  useEffect(() => {
+    if (!!gamewinner && battleReady) {
+      setGameOverModelOpen(true);
+    }
+  }, [gamewinner, battleReady]);
 
   useEffect(() => {
     if (opponentReady) {
@@ -129,6 +151,20 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     }
   }, [battleReady]);
 
+  useEffect(() => {
+    if (battleReady && roundWinner !== null) {
+      if (roundWinner === "tie") {
+        setAnimatedText("Tie!");
+      } else {
+        if (roundWinner) {
+          setAnimatedText("You win!");
+        } else {
+          setAnimatedText("You lose!");
+        }
+      }
+    }
+  }, [roundWinner, battleReady]);
+
   // slide baby slide
 
   const { currentSlideIn, opponentSlideIn } = useCardSlideSpring({
@@ -136,6 +172,13 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     opponentReady: !!oppSessionCard,
     timeToSlide: CARD_SLIDE_TIME_DURATION,
   });
+
+  // need a useEffect that grabs
+  //   a) the card drawn
+  //     i. whether this card drawn was dealt
+  //   b) the card the opponent drew and dealt
+
+  // if we're drawn but not dealt,
 
   useEffect(() => {
     if (cardDrawn) {
@@ -222,29 +265,21 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
             <img src={ScoreIcon} alt="score icon" className="h-4/5" />
             <div className="text-xl">Your Score</div>
           </div>
-          <div className="mr-4 text-xl">{readyCurrentScore}</div>
+          <div className="mr-4 text-xl">{myScore}</div>
         </div>
         <div className="flex justify-between p-2 md:p-4 h-16 md:h-20 w-full items-center">
           <div className="flex h-full w-full items-center gap-2">
             <img src={ScoreIcon} alt="score icon" className="h-4/5" />
             <div className="text-xl">Opponent Score</div>
           </div>
-          <div className="mr-4 text-xl">{readyOppScore}</div>
+          <div className="mr-4 text-xl">{oppScore}</div>
         </div>
       </div>
     );
   }
 
   function BattleField() {
-    return (
-      <div>
-        {battleReady ? (
-          <div>
-            <h2>Battle!</h2>
-          </div>
-        ) : null}
-      </div>
-    );
+    return <div>{battleReady && <AnimatedText text={animatedText} />}</div>;
   }
 
   function exitGame() {
@@ -276,27 +311,39 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     );
   }
 
+  function onRestart() {
+    restartGame(gameId, currentPlayerSessionId);
+  }
+
   return (
-    <div className="flex flex-col h-full flex-1">
-      <div className="flex align-top items-start justify-center">
-        <ScoreBoard />
-      </div>
-      <div className="flex flex-col align-middle justify-between h-full">
-        <div className="self-start ml-6">
-          <TheirSide />
+    <>
+      <GameOverModal
+        isOpen={gameOverModelOpen}
+        winner={gamewinner as string}
+        onRestart={onRestart}
+        onExit={exitGame}
+      />
+      <div className="flex flex-col h-full flex-1 ">
+        <div className="flex align-top items-start justify-center">
+          <ScoreBoard />
         </div>
-        {/* battle field */}
-        <BattleField />
-        <div>{battleReady ? <div id="battle-field"></div> : null}</div>
-        <div className="fixed bottom-0 flex justify-right md:justify-between w-full">
-          <div className="hidden md:top-0 md:relative md:block md:self-end md:m-8">
-            <ExitButton />
+        <div className="flex flex-col align-middle justify-between h-full">
+          <div className="self-start ml-6">
+            <TheirSide />
           </div>
-          <div className="self-end fkex-1 right-0">
-            <MySide />
+          {/* battle field */}
+          <BattleField />
+          <div>{battleReady ? <div id="battle-field"></div> : null}</div>
+          <div className="fixed bottom-0 flex justify-right md:justify-between w-full">
+            <div className="hidden md:top-0 md:relative md:block md:self-end md:m-8">
+              <ExitButton />
+            </div>
+            <div className="self-end fkex-1 right-0">
+              <MySide />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -4,9 +4,9 @@ import "./RainingDeck.css";
 import CardBackImage from "../../../assets/war-games-back.jpeg";
 import { BaseCardLayout } from "./BaseLayout";
 
-export const TIME_TO_MAKE_IT_RAIN: number = 2000;
+export const TIME_TO_MAKE_IT_RAIN: number = 1500;
 const RAIN_BUFFER: number = 1000;
-const DECK_SIZE = 20;
+const DECK_SIZE = 12;
 const cards = Array.from({ length: DECK_SIZE }, (_, i) => CardBackImage);
 
 // These two are just helpers, they curate spring data, values that are later being interpolated into css

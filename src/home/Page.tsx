@@ -1,7 +1,5 @@
 import WarGamesLogo from "../assets/wargames-logo.webp";
 import SeanTarzyLogo from "../assets/sean-tarzy-logo.webp";
-import BabeRuth from "../assets/ruth-for-bg.png";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 export default function HomePage() {
   return (
     <main

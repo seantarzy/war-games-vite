@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import MultiplayerGame from "./components/MultiplayerGameClient.client";
-import MultiplayerLobby from "./components/MultiplayerLobby.client";
+import MultiplayerGame from "./components/Game";
+import MultiplayerLobby from "./components/Lobby";
 import "./styles.css";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 

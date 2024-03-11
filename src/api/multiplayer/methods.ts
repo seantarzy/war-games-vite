@@ -21,6 +21,13 @@ export const joinGame = async (gameCode: string) => {
   return res.json();
 };
 
+export const getCurrentSessionsState = async (gameId: number) => {
+  const res = await fetch(
+    `${baseUrl}/current_sessions_state?game_id=${gameId}`
+  );
+  return res.json();
+};
+
 // these methods signal whether we are waiting for a guest to join, the game is ready to start, or something went wrong
 
 export const hostInGame = async (gameId: number) => {
@@ -33,6 +40,13 @@ export const hostInGame = async (gameId: number) => {
 export const guestInGame = async (gameId: number) => {
   const res = await fetch(
     `${baseUrl}/handle_guest_game_state?game_id=${gameId}`
+  );
+  return res.json();
+};
+
+export const getCurrentScore = async (gameId: number, sessionId: number) => {
+  const res = await fetch(
+    `${baseUrl}/current_score?game_id=${gameId}&session_id=${sessionId}`
   );
   return res.json();
 };
