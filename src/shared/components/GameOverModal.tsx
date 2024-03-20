@@ -5,18 +5,20 @@ const GameOverModal = ({
   winner,
   onRestart,
   onExit,
+  onClose,
 }: {
   isOpen: boolean;
   winner: string;
   onRestart: () => void;
   onExit: () => void;
+  onClose: () => void;
 }) => {
   if (!isOpen) return null;
   const [rematchRequested, setRematchRequested] = useState(false);
   return (
     <div
       className="fixed inset-0 z-50 bg-black bg-opacity-40 flex justify-center items-center"
-      onClick={onExit}
+      onClick={onClose}
     >
       <div
         className="bg-slate-400 p-4 rounded-lg shadow-lg flex flex-col items-center"

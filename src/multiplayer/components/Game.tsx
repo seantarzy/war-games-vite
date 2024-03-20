@@ -11,7 +11,7 @@ import { animated } from "@react-spring/web";
 import { BaseballButton } from "./ui_components/Button";
 import { PlayerCard } from "./ui_components/PlayerCard";
 import RainingDeck, { TIME_TO_MAKE_IT_RAIN } from "./ui_components/RainingDeck";
-import { destroySession } from "../../api/sessions/methods";
+import { destroySession, getRefreshesLeft } from "../../api/sessions/methods";
 import { useMakeItRain } from "../hooks/useMakeItRain";
 import { useHandleGameScore } from "../hooks/useHandleGameScore";
 import { useCardSlideSpring } from "../hooks/useCardSlideSpring";
@@ -19,6 +19,7 @@ import ScoreIcon from "../../assets/war-games-score-icon.png";
 import GameOverModal from "../../shared/components/GameOverModal";
 import { AnimatedText } from "./ui_components/AnimationText";
 import { restartGame } from "../../api/game/methods";
+import { Toast } from "./ui_components/Toast";
 const CARD_SLIDE_TIME_DURATION: number = 800;
 
 const CARD_BATTLE_TIME_DURATION: number = 1500;
@@ -31,14 +32,15 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   const [currentCardInMiddle, setCurrentCardInMiddle] = useState(false);
   const [animatedText, setAnimatedText] = useState("");
   const [cardDrawn, setCardDrawn] = useState<Card | null>(null);
+  const [refreshesLeft, setRefreshesLeft] = useState(0);
   const {
     currentSessionCard,
     oppSessionCard,
     invalidateCardRound,
     roundWinner,
     gamewinner,
+    rematchRequestReceived,
   } = useGameChannelWebsocket({
-    setCardDrawn,
     gameId: gameId,
     currentPlayerSessionId: currentPlayerSessionId,
     sessionType: sessionType,
@@ -49,9 +51,18 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   // 'opp session' is the other player
 
   const drawRando = () => {
-    getRandomPlayer(gameId, currentPlayerSessionId).then((card: Card) => {
-      setCardDrawn(card);
-    });
+    getRandomPlayer(gameId, currentPlayerSessionId).then(
+      ({
+        player,
+        refreshes_left,
+      }: {
+        player: Card;
+        refreshes_left: number;
+      }) => {
+        setCardDrawn(player);
+        setRefreshesLeft(refreshes_left);
+      }
+    );
   };
 
   const [oppFlipped, setOppFlipped] = useState(true);
@@ -86,20 +97,28 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     });
   };
 
+  // useEffect(() => {
+  //   if (!gameId) return;
+  //   if (!currentPlayerSessionId) return;
+  //   getCurrentSessionsState(gameId).then((res) => {
+  //     const session1 = res.session1;
+  //     const session2 = res.session2;
+  //     const mySession =
+  //       session1.id === currentPlayerSessionId ? session1 : session2;
+  //     if (mySession.card) {
+  //       setCardDrawn(mySession.card);
+  //     }
+  //     if (mySession.card && mySession.dealt) {
+  //       setcardSlideReady(true);
+  //     }
+  //   });
+  // }, [gameId]);
+
   useEffect(() => {
-    getCurrentSessionsState(gameId).then((res) => {
-      const session1 = res.session1;
-      const session2 = res.session2;
-      const mySession =
-        session1.id === currentPlayerSessionId ? session1 : session2;
-      if (mySession.card) {
-        setCardDrawn(mySession.card);
-      }
-      if (mySession.card && mySession.dealt) {
-        setcardSlideReady(true);
-      }
+    getRefreshesLeft(currentPlayerSessionId).then((res) => {
+      setRefreshesLeft(res.refreshes);
     });
-  }, [gameId]);
+  }, [currentPlayerSessionId]);
 
   useEffect(() => {
     if (!!gamewinner && battleReady) {
@@ -190,13 +209,17 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     function MyButtonSet() {
       return (
         <div className="flex flex-col gap-4 self-center max-w-64">
+          <div className="text-white text-center">
+            Refreshes left: {refreshesLeft}
+          </div>
           <BaseballButton
             onClick={drawRando}
-            disabled={false}
+            disabled={refreshesLeft === 0}
             className="h-14 w-42"
           >
             {cardDrawn ? "Redraw" : "Draw Player"}
           </BaseballButton>
+
           <BaseballButton
             onClick={sendMove}
             disabled={!cardDrawn}
@@ -223,7 +246,7 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
           </div>
         ) : (
           <div className="mr-20">
-            <RainingDeck raining={makeItRain} />
+            <RainingDeck raining={makeItRain} key="my-side" />
           </div>
         )}
       </div>
@@ -242,7 +265,7 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
         {!oppSessionCard ? (
           // not even ready yet, maybe has drawn a card at most
           <div className="relative ml-[-48px]">
-            <RainingDeck raining={makeItRain} />
+            <RainingDeck raining={makeItRain} key="their-side" />
           </div>
         ) : (
           <animated.div style={opponentSlideIn}>
@@ -315,6 +338,10 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     restartGame(gameId, currentPlayerSessionId);
   }
 
+  function onModalClose() {
+    setGameOverModelOpen(false);
+  }
+
   return (
     <>
       <GameOverModal
@@ -322,6 +349,7 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
         winner={gamewinner as string}
         onRestart={onRestart}
         onExit={exitGame}
+        onClose={onModalClose}
       />
       <div className="flex flex-col h-full flex-1 ">
         <div className="flex align-top items-start justify-center">
@@ -341,6 +369,12 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
             <div className="self-end fkex-1 right-0">
               <MySide />
             </div>
+            <Toast
+              rematchRequestReceived={rematchRequestReceived}
+              onAccept={() => {
+                onRestart();
+              }}
+            />
           </div>
         </div>
       </div>

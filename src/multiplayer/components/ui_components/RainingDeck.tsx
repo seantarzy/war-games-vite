@@ -11,7 +11,7 @@ const cards = Array.from({ length: DECK_SIZE }, (_, i) => CardBackImage);
 
 // These two are just helpers, they curate spring data, values that are later being interpolated into css
 
-function RainingDeck({ raining }: { raining: boolean }) {
+function RainingDeck({ raining, key }: { raining: boolean; key: string }) {
   const from = (_i: number) => ({
     x: 0,
     rot: 0,
@@ -36,9 +36,10 @@ function RainingDeck({ raining }: { raining: boolean }) {
   })); // Create a bunch of springs using the helpers above
   // Create a gesture, we're interested in down-state, delta (current-pos - click-pos), direction and velocity
 
+  console.log("raining", raining);
   // Now we're just mapping the animated values to our view, that's it. Btw, this component only renders once. :-)
   return (
-    <BaseCardLayout>
+    <BaseCardLayout key={key}>
       {props.map(({ x, y, rot, scale }, i) => (
         <animated.div
           className={"deck"}

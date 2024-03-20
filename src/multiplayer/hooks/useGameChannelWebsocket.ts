@@ -5,7 +5,6 @@ import {
 } from "../../api/multiplayer/methods";
 import { useEffect, useState } from "react";
 import { Card, sessionType } from "../types";
-import { restartGame } from "../../api/game/methods";
 
 const useGameChannelWebsocket = ({
   currentPlayerSessionId,
@@ -26,6 +25,7 @@ const useGameChannelWebsocket = ({
   exitLobby: () => void;
   roundWinner: boolean | "tie" | null;
   gamewinner: "you" | "them" | null;
+  rematchRequestReceived: boolean;
 } => {
   const [websocket, setWebsocket] = useState<WebSocket | null>(null);
   const [gameReady, setGameReady] = useState(false);
@@ -34,6 +34,8 @@ const useGameChannelWebsocket = ({
     null
   );
 
+  const [rematchRequestReceived, setRematchRequestReceived] =
+    useState<boolean>(false);
   const [roundWinner, setRoundWinner] = useState<boolean | "tie" | null>(null);
 
   const [gameWinner, setGameWinner] = useState<"you" | "them" | null>(null);
@@ -47,7 +49,7 @@ const useGameChannelWebsocket = ({
     //  2. did we draw a card
     //  3. did we deal a card
     // 4. did the opponent deal a card
-    if (gameId) {
+    if (gameId && currentPlayerSessionId) {
       getCurrentSessionsState(gameId).then((res) => {
         const session1 = res.session1;
         const session2 = res.session2;
@@ -116,18 +118,14 @@ const useGameChannelWebsocket = ({
   }
 
   function handleGameRestart() {
+    console.log("game restart");
     window.location.reload();
   }
 
   function handleRematchRequest(message: any) {
-    debugger;
     if (message.requesting_session.id === currentPlayerSessionId) return;
     console.log("rematch request received");
-    const confirm = window.confirm("Your opponent has requested a rematch.");
-    if (!gameId) return;
-    if (confirm) {
-      restartGame(gameId, currentPlayerSessionId);
-    }
+    setRematchRequestReceived(true);
   }
   function handleInvalidGame() {
     setGameReady(false);
@@ -144,7 +142,7 @@ const useGameChannelWebsocket = ({
     let ws: WebSocket;
 
     if (gameId) {
-      ws = new WebSocket(`ws://localhost:3001/cable`);
+      ws = new WebSocket(`${import.meta.env.VITE_API_BASE_WS_URL}/cable`);
       ws.onopen = () => {
         console.log("Connected to WebSocket");
         const subscription = {
@@ -234,6 +232,7 @@ const useGameChannelWebsocket = ({
     exitLobby,
     roundWinner,
     gamewinner: gameWinner,
+    rematchRequestReceived,
   };
 };
 
