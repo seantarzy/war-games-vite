@@ -1,6 +1,5 @@
-"use client";
 import { createGame, joinGame } from "../../api/multiplayer/methods";
-import React, { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import useGameChannelWebsocket from "../hooks/useGameChannelWebsocket";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { sessionType } from "../types";

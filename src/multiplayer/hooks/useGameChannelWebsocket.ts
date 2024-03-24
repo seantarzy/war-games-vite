@@ -92,7 +92,6 @@ const useGameChannelWebsocket = ({
 
   const handleRoundWinner = (message: any) => {
     const winner = message.winner;
-    const loser = message.loser;
     if (winner === "tie") {
       setRoundWinner("tie");
     }

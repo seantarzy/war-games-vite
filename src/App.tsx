@@ -1,6 +1,5 @@
 // App.jsx or your main component file
-import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./home/Page";
 import MultiplayerPage from "./multiplayer/page"; // Import your multiplayer component
 

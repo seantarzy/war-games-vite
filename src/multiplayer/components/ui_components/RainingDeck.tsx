@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 export const TIME_TO_MAKE_IT_RAIN: number = 1500;
 const RAIN_BUFFER: number = 1000;
 const DECK_SIZE = 12;
-const cards = Array.from({ length: DECK_SIZE }, (_, i) => CardBackImage);
+const cards = Array.from({ length: DECK_SIZE }, (_, _i) => CardBackImage);
 
 // These two are just helpers, they curate spring data, values that are later being interpolated into css
 
@@ -52,7 +52,7 @@ function RainingDeck({
     rot: -10 + Math.random() * 20,
     delay: raining ? i * ((TIME_TO_MAKE_IT_RAIN - RAIN_BUFFER) / DECK_SIZE) : 0,
   });
-  const [props, api] = useSprings(cards.length, (i) => ({
+  const [props, _api] = useSprings(cards.length, (i) => ({
     ...to(i),
     from: from(i),
   })); // Create a bunch of springs using the helpers above

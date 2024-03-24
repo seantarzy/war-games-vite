@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from "react";
+import { useState, useEffect, memo } from "react";
 import { getRandomPlayer } from "../../api/players/methods";
 import useGameChannelWebsocket from "../hooks/useGameChannelWebsocket";
 import { useLocalStorage } from "../hooks/useLocalStorage";
@@ -96,7 +96,7 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
       return;
     }
     const playerId = parseInt(cardDrawn.id);
-    dealCard(gameId, currentPlayerSessionId, playerId).then((res) => {
+    dealCard(gameId, currentPlayerSessionId, playerId).then((_res) => {
       setcardSlideReady(true);
     });
   };

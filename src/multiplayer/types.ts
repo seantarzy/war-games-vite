@@ -33,11 +33,6 @@ export interface SessionGame {
 
 export type Card = Batter | Pitcher;
 
-interface BattlePayload {
-  card1: Batter | Pitcher;
-  card2: Batter | Pitcher;
-}
-
 export type sessionType = "host" | "guest";
 
 // avg

@@ -1,10 +1,9 @@
-import React, { useState } from "react";
 import MultiplayerGame from "./components/Game";
 import MultiplayerLobby from "./components/Lobby";
 import "./styles.css";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 
-function MultiplayerPage(props: any) {
+function MultiplayerPage() {
   const [gameId, setGameId] = useLocalStorage<number | null>("gameId", null);
   const startGame = (gameId: number) => {
     setGameId(gameId);

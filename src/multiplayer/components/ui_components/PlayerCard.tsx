@@ -1,8 +1,18 @@
 import { useSpring, a } from "@react-spring/web";
 import { Card } from "../../types";
 import { BaseCardLayout } from "./BaseLayout";
-import { CardBack } from "./Deck";
-
+import CardBackImage from "../../../assets/war-games-back.jpeg";
+export function CardBack() {
+  return (
+    <BaseCardLayout>
+      <img
+        src={CardBackImage}
+        alt="card back"
+        className="h-full w-full rounded-2xl"
+      />
+    </BaseCardLayout>
+  );
+}
 export function PlayerCard({
   player,
   side,
@@ -21,34 +31,36 @@ export function PlayerCard({
   });
 
   return (
-    <BaseCardLayout>
-      <div className="relative w-full h-full">
-        {/* Front side of the card */}
-        <a.div
-          className="will-change-transform absolute w-full h-full bg-blue-600 border-gray-100 border-2 flex flex-col justify-center items-center rounded-lg"
-          style={{
-            opacity: opacity.to((o: any) => 1 - o),
-            transform,
-          }}
-        >
-          <h2>{player.name}</h2>
-          <img
-            src={player.image}
-            alt={player.name}
-            className="w-[90%] h-[80%]"
-          />
-          <div>WAR: {player.war}</div>
-        </a.div>
-        <a.div
-          className="will-change-transform absolute w-full h-full rounded-lg"
-          style={{
-            opacity,
-            transform: transform.to((t: any) => `${t} rotateY(180deg)`),
-          }}
-        >
-          <CardBack />
-        </a.div>
-      </div>
-    </BaseCardLayout>
+    <div key={side}>
+      <BaseCardLayout>
+        <div className="relative w-full h-full">
+          {/* Front side of the card */}
+          <a.div
+            className="will-change-transform absolute w-full h-full bg-blue-600 border-gray-100 border-2 flex flex-col justify-center items-center rounded-lg"
+            style={{
+              opacity: opacity.to((o: any) => 1 - o),
+              transform,
+            }}
+          >
+            <h2>{player.name}</h2>
+            <img
+              src={player.image}
+              alt={player.name}
+              className="w-[90%] h-[80%]"
+            />
+            <div>WAR: {player.war}</div>
+          </a.div>
+          <a.div
+            className="will-change-transform absolute w-full h-full rounded-lg"
+            style={{
+              opacity,
+              transform: transform.to((t: any) => `${t} rotateY(180deg)`),
+            }}
+          >
+            <CardBack />
+          </a.div>
+        </div>
+      </BaseCardLayout>
+    </div>
   );
 }
