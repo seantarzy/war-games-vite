@@ -25,6 +25,8 @@ const useGameChannelWebsocket = ({
   exitLobby: () => void;
   roundWinner: boolean | "tie" | null;
   gamewinner: "you" | "them" | null;
+  finalWinnerScore: number;
+  finalLoserScore: number;
   rematchRequestReceived: boolean;
 } => {
   const [websocket, setWebsocket] = useState<WebSocket | null>(null);
@@ -39,6 +41,8 @@ const useGameChannelWebsocket = ({
   const [roundWinner, setRoundWinner] = useState<boolean | "tie" | null>(null);
 
   const [gameWinner, setGameWinner] = useState<"you" | "them" | null>(null);
+  const [finalWinnerScore, setfinalWinnerScore] = useState<number>(0);
+  const [finalLoserScore, setFinalLoserScore] = useState<number>(0);
   const [oppSessionCard, setOppSessionCard] = useState<Card | null>(null);
 
   const battleReady = currentSessionCard && oppSessionCard ? true : false;
@@ -57,11 +61,6 @@ const useGameChannelWebsocket = ({
           session1.id === currentPlayerSessionId ? session1 : session2;
         const oppSession =
           session1.id === currentPlayerSessionId ? session2 : session1;
-        console.log("my session", mySession);
-        console.log("opp session", oppSession);
-        if (mySession.card) {
-          console.log("card drawn", mySession.card);
-        }
         if (oppSession.card && oppSession.dealt) {
           setOppSessionCard(oppSession.card);
         }
@@ -72,7 +71,6 @@ const useGameChannelWebsocket = ({
     }
   }, [gameId]);
   const handleCardPlayed = (message: any) => {
-    console.log("card played", message);
     // when we know it's the current session that played, we animate current sessions card sliding face up to the center
     // when we know it's the opp session that played, we animate opp sessions card sliding face down to the center
     // at the end of the animation,
@@ -95,7 +93,6 @@ const useGameChannelWebsocket = ({
   const handleRoundWinner = (message: any) => {
     const winner = message.winner;
     const loser = message.loser;
-    console.log("winner", winner);
     if (winner === "tie") {
       setRoundWinner("tie");
     }
@@ -108,8 +105,11 @@ const useGameChannelWebsocket = ({
     }
   };
   function handleGameWinner(message: any) {
-    console.log("game winner", message);
     const winner = message.winner;
+    const winnerScore = message.winner_score;
+    const loserScore = message.loser_score;
+    setfinalWinnerScore(winnerScore);
+    setFinalLoserScore(loserScore);
     if (winner.id === currentPlayerSessionId) {
       setGameWinner("you");
     } else {
@@ -118,13 +118,11 @@ const useGameChannelWebsocket = ({
   }
 
   function handleGameRestart() {
-    console.log("game restart");
     window.location.reload();
   }
 
   function handleRematchRequest(message: any) {
     if (message.requesting_session.id === currentPlayerSessionId) return;
-    console.log("rematch request received");
     setRematchRequestReceived(true);
   }
   function handleInvalidGame() {
@@ -233,6 +231,8 @@ const useGameChannelWebsocket = ({
     roundWinner,
     gamewinner: gameWinner,
     rematchRequestReceived,
+    finalWinnerScore,
+    finalLoserScore,
   };
 };
 

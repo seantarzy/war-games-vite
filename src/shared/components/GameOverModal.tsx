@@ -6,12 +6,16 @@ const GameOverModal = ({
   onRestart,
   onExit,
   onClose,
+  winnerScore,
+  loserScore,
 }: {
   isOpen: boolean;
   winner: string;
   onRestart: () => void;
   onExit: () => void;
   onClose: () => void;
+  winnerScore: number;
+  loserScore: number;
 }) => {
   if (!isOpen) return null;
   const [rematchRequested, setRematchRequested] = useState(false);
@@ -30,7 +34,17 @@ const GameOverModal = ({
           <>
             <h2 className="text-2xl font-bold mb-4">Game Over!</h2>
             <p className="mb-8">
-              {winner === "you" ? "You won!" : "You lost! Play again?"}
+              {winner === "you"
+                ? `
+                You won with a score of ${winnerScore} to ${loserScore}! 🎉
+              `
+                : winner === "tie"
+                ? `
+                It's a tie! Play again?
+              `
+                : `
+                You lost with a score of ${winnerScore} to ${loserScore}. 😢
+              `}
             </p>
             <div className="flex space-x-4">
               <button

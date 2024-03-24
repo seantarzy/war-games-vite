@@ -11,9 +11,9 @@ export const useCardSlideSpring = ({
   timeToSlide: number;
 }) => {
   const currentWindowWidthSlideTravel =
-    window.innerWidth > 768 ? "-30vw" : "-21vw";
+    window.innerWidth > 768 ? "-30vw" : "-6vw";
   const currentWindowHeightSlideTravel =
-    window.innerWidth > 768 ? "-21vh" : "-12vh";
+    window.innerWidth > 768 ? "-21vh" : "-8vh";
   const currentSlideIn = useSpring({
     to: {
       transform: currentReady
@@ -24,7 +24,6 @@ export const useCardSlideSpring = ({
     config: { duration: timeToSlide },
     onResolve(result, _ctrl, _item) {
       if (result && result.finished) {
-        // console.log("result", result);
       }
     },
   });

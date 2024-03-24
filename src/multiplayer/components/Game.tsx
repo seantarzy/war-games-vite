@@ -12,7 +12,6 @@ import { BaseballButton } from "./ui_components/Button";
 import { PlayerCard } from "./ui_components/PlayerCard";
 import RainingDeck, { TIME_TO_MAKE_IT_RAIN } from "./ui_components/RainingDeck";
 import { destroySession, getRefreshesLeft } from "../../api/sessions/methods";
-import { useMakeItRain } from "../hooks/useMakeItRain";
 import { useHandleGameScore } from "../hooks/useHandleGameScore";
 import { useCardSlideSpring } from "../hooks/useCardSlideSpring";
 import ScoreIcon from "../../assets/war-games-score-icon.png";
@@ -33,12 +32,17 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   const [animatedText, setAnimatedText] = useState("");
   const [cardDrawn, setCardDrawn] = useState<Card | null>(null);
   const [refreshesLeft, setRefreshesLeft] = useState(0);
+  const [myDeckRaining, setMyDeckRaining] = useState(false);
+  const [oppDeckRaining, setOppDeckRaining] = useState(false);
+  const [toggleRain, setToggleRain] = useState(false);
   const {
     currentSessionCard,
     oppSessionCard,
     invalidateCardRound,
     roundWinner,
     gamewinner,
+    finalWinnerScore,
+    finalLoserScore,
     rematchRequestReceived,
   } = useGameChannelWebsocket({
     gameId: gameId,
@@ -60,15 +64,15 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
         refreshes_left: number;
       }) => {
         setCardDrawn(player);
-        setRefreshesLeft(refreshes_left);
+        if (refreshesLeft > 0) {
+          setRefreshesLeft(refreshes_left);
+        }
       }
     );
   };
 
   const [oppFlipped, setOppFlipped] = useState(true);
   const [currentFlipped, setCurrentFlipped] = useState(true);
-
-  const { makeItRain, toggleMakeItRain } = useMakeItRain(TIME_TO_MAKE_IT_RAIN);
 
   let opponentReady = !!oppSessionCard;
   let currentReady = !!currentSessionCard;
@@ -97,22 +101,33 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     });
   };
 
-  // useEffect(() => {
-  //   if (!gameId) return;
-  //   if (!currentPlayerSessionId) return;
-  //   getCurrentSessionsState(gameId).then((res) => {
-  //     const session1 = res.session1;
-  //     const session2 = res.session2;
-  //     const mySession =
-  //       session1.id === currentPlayerSessionId ? session1 : session2;
-  //     if (mySession.card) {
-  //       setCardDrawn(mySession.card);
-  //     }
-  //     if (mySession.card && mySession.dealt) {
-  //       setcardSlideReady(true);
-  //     }
-  //   });
-  // }, [gameId]);
+  useEffect(() => {
+    if (!gameId) return;
+    if (!currentPlayerSessionId) return;
+    getCurrentSessionsState(gameId).then((res) => {
+      const session1 = res.session1;
+      const session2 = res.session2;
+      const mySession =
+        session1.id === currentPlayerSessionId ? session1 : session2;
+      if (mySession.card) {
+        setCardDrawn(mySession.card);
+      }
+      if (mySession.card && mySession.dealt) {
+        setcardSlideReady(true);
+      }
+    });
+  }, [gameId]);
+
+  useEffect(() => {
+    setMyDeckRaining(true);
+    setTimeout(() => {
+      setMyDeckRaining(false);
+    }, TIME_TO_MAKE_IT_RAIN);
+    setOppDeckRaining(true);
+    setTimeout(() => {
+      setOppDeckRaining(false);
+    }, TIME_TO_MAKE_IT_RAIN);
+  }, [gameId, toggleRain]);
 
   useEffect(() => {
     getRefreshesLeft(currentPlayerSessionId).then((res) => {
@@ -159,7 +174,7 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
           setCardDrawn(null);
           setCurrentCardInMiddle(false);
           setOppFlipped(true);
-          toggleMakeItRain();
+          setToggleRain(!toggleRain);
         }, CARD_BATTLE_TIME_DURATION);
       }, CARD_SLIDE_TIME_DURATION);
 
@@ -214,7 +229,7 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
           </div>
           <BaseballButton
             onClick={drawRando}
-            disabled={refreshesLeft === 0}
+            disabled={!!cardDrawn && refreshesLeft === 0}
             className="h-14 w-42"
           >
             {cardDrawn ? "Redraw" : "Draw Player"}
@@ -246,7 +261,11 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
           </div>
         ) : (
           <div className="mr-20">
-            <RainingDeck raining={makeItRain} key="my-side" />
+            <RainingDeck
+              key={`my-side-${gameId}`}
+              whoseSide="mine"
+              initiallyRaining={myDeckRaining}
+            />
           </div>
         )}
       </div>
@@ -265,7 +284,11 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
         {!oppSessionCard ? (
           // not even ready yet, maybe has drawn a card at most
           <div className="relative ml-[-48px]">
-            <RainingDeck raining={makeItRain} key="their-side" />
+            <RainingDeck
+              key={`their-deck-${gameId}`}
+              whoseSide="theirs"
+              initiallyRaining={oppDeckRaining}
+            />
           </div>
         ) : (
           <animated.div style={opponentSlideIn}>
@@ -345,10 +368,12 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   return (
     <>
       <GameOverModal
-        isOpen={gameOverModelOpen}
+        isOpen={gameOverModelOpen && !rematchRequestReceived}
         winner={gamewinner as string}
         onRestart={onRestart}
         onExit={exitGame}
+        winnerScore={finalWinnerScore}
+        loserScore={finalLoserScore}
         onClose={onModalClose}
       />
       <div className="flex flex-col h-full flex-1 ">

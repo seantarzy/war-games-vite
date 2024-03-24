@@ -54,7 +54,6 @@ export function CardStack({
   shuffleTrigger?: boolean;
 }) {
   const cardStyles = useMemo(() => {
-    console.log("shuffling");
     return new Array(10).fill(0).map((_, index) => ({
       zIndex: index,
       transform: `translate(${Math.random() * 10 - 5}px, ${
