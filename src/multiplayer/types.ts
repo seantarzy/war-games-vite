@@ -23,6 +23,14 @@ interface Pitcher extends Player {
   strikeouts: string;
 }
 
+export interface SessionGame {
+  id: string;
+  current_score: number;
+  game_id: string;
+  session_id: number;
+  session_type: sessionType;
+}
+
 export type Card = Batter | Pitcher;
 
 interface BattlePayload {

@@ -1,7 +1,10 @@
-import { hostInGame, guestInGame } from "../../api/multiplayer/methods";
+import {
+  hostInGame,
+  guestInGame,
+  getCurrentSessionsState,
+} from "../../api/multiplayer/methods";
 import { useEffect, useState } from "react";
 import { Card, sessionType } from "../types";
-import { useLocalStorage } from "./useLocalStorage";
 
 const useGameChannelWebsocket = ({
   currentPlayerSessionId,
@@ -18,11 +21,13 @@ const useGameChannelWebsocket = ({
   battleReady: boolean;
   currentSessionCard: Card | null;
   oppSessionCard: Card | null;
-  currentSessionScore: number;
-  oppSessionScore: number;
   invalidateCardRound: () => void;
   exitLobby: () => void;
-  invalidGame: boolean;
+  roundWinner: boolean | "tie" | null;
+  gamewinner: "you" | "them" | null;
+  finalWinnerScore: number;
+  finalLoserScore: number;
+  rematchRequestReceived: boolean;
 } => {
   const [websocket, setWebsocket] = useState<WebSocket | null>(null);
   const [gameReady, setGameReady] = useState(false);
@@ -31,23 +36,40 @@ const useGameChannelWebsocket = ({
     null
   );
 
-  const [currentSessionScore, setCurrentSessionScore] = useLocalStorage(
-    "currentSessionScore",
-    0
-  );
-  const [oppSessionScore, setOppSessionScore] = useLocalStorage(
-    "oppSessionScore",
-    0
-  );
-
+  const [rematchRequestReceived, setRematchRequestReceived] =
+    useState<boolean>(false);
   const [roundWinner, setRoundWinner] = useState<boolean | "tie" | null>(null);
 
+  const [gameWinner, setGameWinner] = useState<"you" | "them" | null>(null);
+  const [finalWinnerScore, setfinalWinnerScore] = useState<number>(0);
+  const [finalLoserScore, setFinalLoserScore] = useState<number>(0);
   const [oppSessionCard, setOppSessionCard] = useState<Card | null>(null);
 
   const battleReady = currentSessionCard && oppSessionCard ? true : false;
 
-  const [invalidGame, setInvalidGame] = useState(false);
-
+  useEffect(() => {
+    // stuff to check on mount:
+    //  1. if the game is over
+    //  2. did we draw a card
+    //  3. did we deal a card
+    // 4. did the opponent deal a card
+    if (gameId && currentPlayerSessionId) {
+      getCurrentSessionsState(gameId).then((res) => {
+        const session1 = res.session1;
+        const session2 = res.session2;
+        const mySession =
+          session1.id === currentPlayerSessionId ? session1 : session2;
+        const oppSession =
+          session1.id === currentPlayerSessionId ? session2 : session1;
+        if (oppSession.card && oppSession.dealt) {
+          setOppSessionCard(oppSession.card);
+        }
+        if (mySession.card && mySession.dealt) {
+          setCurrentSessionCard(mySession.card);
+        }
+      });
+    }
+  }, [gameId]);
   const handleCardPlayed = (message: any) => {
     // when we know it's the current session that played, we animate current sessions card sliding face up to the center
     // when we know it's the opp session that played, we animate opp sessions card sliding face down to the center
@@ -56,17 +78,6 @@ const useGameChannelWebsocket = ({
     // if it was the opp session's animation that just finished, we flip the opp session card face up
     // either way, it's the opp session's card that flips over, when both cards are ready.
 
-    // so:
-    //   animate to center in both cases
-    //      - if current session, send the card face up
-    //      - if opp session, send the card face down
-    //   if both cards are ready, flip the opp session card face up
-    //       - if both cards are ready, backend should tell us who won
-    //       - but we dont reveal right away, we wait for the animation to finish
-    //  then we reveal
-    //    - the opponent's card
-    //    - the winner
-    //    - the score
     if (message.session.id === currentPlayerSessionId) {
       setCurrentSessionCard(message.player);
     } else {
@@ -81,19 +92,45 @@ const useGameChannelWebsocket = ({
 
   const handleRoundWinner = (message: any) => {
     const winner = message.winner;
+    const loser = message.loser;
     if (winner === "tie") {
       setRoundWinner("tie");
     }
     switch (winner.id) {
       case currentPlayerSessionId:
         setRoundWinner(true);
-        setCurrentSessionScore(winner.current_score);
         break;
       default:
-        setOppSessionScore(winner.current_score);
         setRoundWinner(false);
     }
   };
+  function handleGameWinner(message: any) {
+    const winner = message.winner;
+    const winnerScore = message.winner_score;
+    const loserScore = message.loser_score;
+    setfinalWinnerScore(winnerScore);
+    setFinalLoserScore(loserScore);
+    if (winner.id === currentPlayerSessionId) {
+      setGameWinner("you");
+    } else {
+      setGameWinner("them");
+    }
+  }
+
+  function handleGameRestart() {
+    window.location.reload();
+  }
+
+  function handleRematchRequest(message: any) {
+    if (message.requesting_session.id === currentPlayerSessionId) return;
+    setRematchRequestReceived(true);
+  }
+  function handleInvalidGame() {
+    setGameReady(false);
+    window.alert("The game has been invalidated. Exiting game.");
+    window.localStorage.clear();
+    window.location.href = "/"; // Redirect home
+  }
 
   function exitLobby() {
     setGameReady(false);
@@ -103,7 +140,7 @@ const useGameChannelWebsocket = ({
     let ws: WebSocket;
 
     if (gameId) {
-      ws = new WebSocket(`ws://localhost:3001/cable`);
+      ws = new WebSocket(`${import.meta.env.VITE_API_BASE_WS_URL}/cable`);
       ws.onopen = () => {
         console.log("Connected to WebSocket");
         const subscription = {
@@ -145,8 +182,20 @@ const useGameChannelWebsocket = ({
                 setGameStarted(true);
                 break;
               case "invalid_game":
-                setInvalidGame(true);
+                handleInvalidGame();
                 break;
+              case "game_winner":
+                handleGameWinner(message);
+                break;
+              case "game_restart":
+                handleGameRestart();
+                break;
+              case "rematch_requested":
+                handleRematchRequest(message);
+                break;
+              default:
+                console.log("No action found");
+
               // Add more cases as needed
             }
           }
@@ -177,11 +226,13 @@ const useGameChannelWebsocket = ({
     battleReady,
     currentSessionCard,
     oppSessionCard,
-    currentSessionScore,
-    oppSessionScore,
     invalidateCardRound,
     exitLobby,
-    invalidGame,
+    roundWinner,
+    gamewinner: gameWinner,
+    rematchRequestReceived,
+    finalWinnerScore,
+    finalLoserScore,
   };
 };
 
