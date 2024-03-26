@@ -15,3 +15,20 @@ export async function getRandomPlayer(gameId: number, sessionId: number) {
   }
   return res.json();
 }
+
+export async function refreshCard(gameId: number, sessionId: number) {
+  const res = await fetch(`${baseUrl}/refresh_card`, {
+    method: "POST",
+    body: JSON.stringify({
+      game_id: gameId,
+      session_id: sessionId,
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!res.ok) {
+    throw new Error("Failed to refresh card");
+  }
+  return res.json();
+}

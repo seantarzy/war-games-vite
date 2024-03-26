@@ -1,5 +1,5 @@
 import { useState, useEffect, memo } from "react";
-import { getRandomPlayer } from "../../api/players/methods";
+import { getRandomPlayer, refreshCard } from "../../api/players/methods";
 import useGameChannelWebsocket from "../hooks/useGameChannelWebsocket";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { Card } from "../types";
@@ -56,6 +56,14 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
 
   const drawRando = () => {
     getRandomPlayer(gameId, currentPlayerSessionId).then(
+      ({ player }: { player: Card }) => {
+        setCardDrawn(player);
+      }
+    );
+  };
+
+  const refresh = () => {
+    refreshCard(gameId, currentPlayerSessionId).then(
       ({
         player,
         refreshes_left,
@@ -64,7 +72,7 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
         refreshes_left: number;
       }) => {
         setCardDrawn(player);
-        if (refreshesLeft > 0) {
+        if (refreshes_left >= 0) {
           setRefreshesLeft(refreshes_left);
         }
       }
@@ -199,20 +207,11 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     }
   }, [roundWinner, battleReady]);
 
-  // slide baby slide
-
   const { currentSlideIn, opponentSlideIn } = useCardSlideSpring({
     currentReady: cardSlideReady,
     opponentReady: !!oppSessionCard,
     timeToSlide: CARD_SLIDE_TIME_DURATION,
   });
-
-  // need a useEffect that grabs
-  //   a) the card drawn
-  //     i. whether this card drawn was dealt
-  //   b) the card the opponent drew and dealt
-
-  // if we're drawn but not dealt,
 
   useEffect(() => {
     if (cardDrawn) {
@@ -224,17 +223,26 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     function MyButtonSet() {
       return (
         <div className="flex flex-col gap-4 self-center max-w-64">
-          <div className="text-white text-center">
+          <div className="text-white text-center bg-red-500 rounded-xl">
             Refreshes left: {refreshesLeft}
           </div>
-          <BaseballButton
-            onClick={drawRando}
-            disabled={!!cardDrawn && refreshesLeft === 0}
-            className="h-14 w-42"
-          >
-            {cardDrawn ? "Redraw" : "Draw Player"}
-          </BaseballButton>
-
+          {!cardDrawn ? (
+            <BaseballButton
+              onClick={drawRando}
+              disabled={false}
+              className="h-14 w-42"
+            >
+              Draw Player
+            </BaseballButton>
+          ) : (
+            <BaseballButton
+              onClick={refresh}
+              disabled={refreshesLeft <= 0}
+              className="h-14 w-42"
+            >
+              Refresh
+            </BaseballButton>
+          )}
           <BaseballButton
             onClick={sendMove}
             disabled={!cardDrawn}
