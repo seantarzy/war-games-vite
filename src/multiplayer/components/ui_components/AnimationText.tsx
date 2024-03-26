@@ -10,7 +10,7 @@ export function AnimatedText({ text }: { text: string }) {
   return (
     <animated.div
       style={spring}
-      className="text-4xl text-white font-bold text-center mt-4 mb-4"
+      className="text-4xl text-blue-800 font-bold text-center mt-4 mb-4"
     >
       {text}
     </animated.div>
