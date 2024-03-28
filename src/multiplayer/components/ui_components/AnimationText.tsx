@@ -1,6 +1,12 @@
 import { useSpring, animated } from "@react-spring/web";
 
-export function AnimatedText({ text }: { text: string }) {
+export function AnimatedText({
+  text,
+  roundWinner,
+}: {
+  text: string;
+  roundWinner: "tie" | boolean | null;
+}) {
   const spring = useSpring({
     to: { opacity: 1 },
     from: { opacity: 0 },
@@ -10,7 +16,8 @@ export function AnimatedText({ text }: { text: string }) {
   return (
     <animated.div
       style={spring}
-      className="text-4xl text-blue-800 font-bold text-center mt-4 mb-4"
+      className={`${!!roundWinner ? " text-blue-400 " : " text-red-400 "}
+      } text-4xl font-bold text-center mt-4 mb-4 bg-black rounded-lg p-2`}
     >
       {text}
     </animated.div>

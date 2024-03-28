@@ -19,22 +19,26 @@ import GameOverModal from "../../shared/components/GameOverModal";
 import { AnimatedText } from "./ui_components/AnimationText";
 import { restartGame } from "../../api/game/methods";
 import { Toast } from "./ui_components/Toast";
+import useDeckRaining from "../hooks/useDeckRaining";
+import useRefreshesLeft from "../hooks/useRefreshesLeft";
+import useGameOver from "../hooks/useGameOver";
+import useCardMiddleState from "../hooks/useCardInMiddleState";
+import useBattleOutComeText from "../hooks/useBattleOutComeText";
 const CARD_SLIDE_TIME_DURATION: number = 800;
 
 const CARD_BATTLE_TIME_DURATION: number = 1500;
 export default function MultiplayerGame({ gameId }: { gameId: number }) {
   const [currentPlayerSessionId] = useLocalStorage("sessionId", 0);
   const [sessionType] = useLocalStorage("sessionType", null);
-  const [gameOverModelOpen, setGameOverModelOpen] = useState(false);
+
   const [cardSlideReady, setcardSlideReady] = useState(false);
-  const [oppCardInMiddle, setOppCardInMiddle] = useState(false);
-  const [currentCardInMiddle, setCurrentCardInMiddle] = useState(false);
-  const [animatedText, setAnimatedText] = useState("");
   const [cardDrawn, setCardDrawn] = useState<Card | null>(null);
-  const [refreshesLeft, setRefreshesLeft] = useState(0);
-  const [myDeckRaining, setMyDeckRaining] = useState(false);
-  const [oppDeckRaining, setOppDeckRaining] = useState(false);
+  const [refreshesLeft, setRefreshesLeft] = useRefreshesLeft(
+    currentPlayerSessionId
+  );
   const [toggleRain, setToggleRain] = useState(false);
+  const { myDeckRaining, oppDeckRaining } = useDeckRaining(toggleRain, gameId);
+
   const {
     currentSessionCard,
     oppSessionCard,
@@ -49,6 +53,12 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     currentPlayerSessionId: currentPlayerSessionId,
     sessionType: sessionType,
   });
+  const {
+    oppCardInMiddle,
+    currentCardInMiddle,
+    setOppCardInMiddle,
+    setCurrentCardInMiddle,
+  } = useCardMiddleState(!!oppSessionCard, !!currentSessionCard);
 
   // state variables for holding scores when we're ready to show them
   // 'current session' is whoever is currently interacting with the client
@@ -82,13 +92,15 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   const [oppFlipped, setOppFlipped] = useState(true);
   const [currentFlipped, setCurrentFlipped] = useState(true);
 
-  let opponentReady = !!oppSessionCard;
-  let currentReady = !!currentSessionCard;
   let battleReady =
     !!currentSessionCard &&
     !!oppSessionCard &&
     !!oppCardInMiddle &&
     !!currentCardInMiddle;
+  const [gameOverModelOpen, setGameOverModelOpen] = useGameOver(
+    gamewinner,
+    battleReady
+  );
 
   const { myScore, oppScore } = useHandleGameScore(
     gameId,
@@ -99,15 +111,13 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     console.error("No session id found");
   }
 
-  const sendMove = () => {
-    if (!cardDrawn || !currentPlayerSessionId || !gameId) {
-      return;
-    }
-    const playerId = parseInt(cardDrawn.id);
-    dealCard(gameId, currentPlayerSessionId, playerId).then((_res) => {
-      setcardSlideReady(true);
-    });
-  };
+  const { currentSlideIn, opponentSlideIn } = useCardSlideSpring({
+    currentReady: cardSlideReady,
+    opponentReady: !!oppSessionCard,
+    timeToSlide: CARD_SLIDE_TIME_DURATION,
+  });
+
+  const animatedText = useBattleOutComeText(battleReady, roundWinner);
 
   useEffect(() => {
     if (!gameId) return;
@@ -125,50 +135,6 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
       }
     });
   }, [gameId]);
-
-  useEffect(() => {
-    setMyDeckRaining(true);
-    setTimeout(() => {
-      setMyDeckRaining(false);
-    }, TIME_TO_MAKE_IT_RAIN);
-    setOppDeckRaining(true);
-    setTimeout(() => {
-      setOppDeckRaining(false);
-    }, TIME_TO_MAKE_IT_RAIN);
-  }, [gameId, toggleRain]);
-
-  useEffect(() => {
-    getRefreshesLeft(currentPlayerSessionId).then((res) => {
-      setRefreshesLeft(res.refreshes);
-    });
-  }, [currentPlayerSessionId]);
-
-  useEffect(() => {
-    if (!!gamewinner && battleReady) {
-      setGameOverModelOpen(true);
-    }
-  }, [gamewinner, battleReady]);
-
-  useEffect(() => {
-    if (opponentReady) {
-      setTimeout(() => {
-        setOppCardInMiddle(true);
-      }, CARD_SLIDE_TIME_DURATION);
-    }
-  }, [opponentReady]);
-
-  useEffect(() => {
-    if (currentReady) {
-      let tomeoutId: number;
-      setTimeout(() => {
-        setCurrentCardInMiddle(true);
-      }, CARD_SLIDE_TIME_DURATION);
-
-      return () => {
-        clearTimeout(tomeoutId);
-      };
-    }
-  }, [currentReady]);
 
   useEffect(() => {
     if (battleReady) {
@@ -194,30 +160,20 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   }, [battleReady]);
 
   useEffect(() => {
-    if (battleReady && roundWinner !== null) {
-      if (roundWinner === "tie") {
-        setAnimatedText("Tie!");
-      } else {
-        if (roundWinner) {
-          setAnimatedText("You win!");
-        } else {
-          setAnimatedText("You lose!");
-        }
-      }
-    }
-  }, [roundWinner, battleReady]);
-
-  const { currentSlideIn, opponentSlideIn } = useCardSlideSpring({
-    currentReady: cardSlideReady,
-    opponentReady: !!oppSessionCard,
-    timeToSlide: CARD_SLIDE_TIME_DURATION,
-  });
-
-  useEffect(() => {
     if (cardDrawn) {
       setCurrentFlipped(false);
     }
   }, [cardDrawn]);
+
+  const sendMove = () => {
+    if (!cardDrawn || !currentPlayerSessionId || !gameId) {
+      return;
+    }
+    const playerId = parseInt(cardDrawn.id);
+    dealCard(gameId, currentPlayerSessionId, playerId).then((_res) => {
+      setcardSlideReady(true);
+    });
+  };
 
   const MySide = memo(() => {
     function MyButtonSet() {
@@ -333,7 +289,13 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   }
 
   function BattleField() {
-    return <div>{battleReady && <AnimatedText text={animatedText} />}</div>;
+    return (
+      <div className="flex flex-col justify-center items-center h-full">
+        {battleReady && (
+          <AnimatedText text={animatedText} roundWinner={roundWinner} />
+        )}
+      </div>
+    );
   }
 
   function exitGame() {
@@ -369,10 +331,6 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     restartGame(gameId, currentPlayerSessionId);
   }
 
-  function onModalClose() {
-    setGameOverModelOpen(false);
-  }
-
   return (
     <>
       <GameOverModal
@@ -382,7 +340,7 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
         onExit={exitGame}
         winnerScore={finalWinnerScore}
         loserScore={finalLoserScore}
-        onClose={onModalClose}
+        onClose={() => setGameOverModelOpen(false)}
       />
       <div className="flex flex-col h-full flex-1 ">
         <div className="flex align-top items-start justify-center">

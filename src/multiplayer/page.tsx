@@ -5,8 +5,13 @@ import { useLocalStorage } from "./hooks/useLocalStorage";
 
 function MultiplayerPage() {
   const [gameId, setGameId] = useLocalStorage<number | null>("gameId", null);
+  const [gameStarted, setGameStarted] = useLocalStorage<boolean>(
+    "gameStarted",
+    false
+  );
   const startGame = (gameId: number) => {
     setGameId(gameId);
+    setGameStarted(true);
   };
 
   return (
@@ -18,7 +23,7 @@ function MultiplayerPage() {
       <br />
       <div className="flex flex-col justify-center flex-1">
         <div className="flex flex-col align-middle justify-center flex-1">
-          {gameId ? (
+          {gameId && gameStarted ? (
             <MultiplayerGame gameId={gameId} />
           ) : (
             <MultiplayerLobby startGame={startGame} />
