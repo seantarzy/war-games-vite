@@ -28,6 +28,7 @@ export default function MultiplayerLobby({
 
   useEffect(() => {
     if (gameId && gameReady) {
+      debugger;
       startGame(gameId);
     }
   }, [gameReady]);
