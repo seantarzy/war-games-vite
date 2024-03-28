@@ -10,8 +10,8 @@ import {
 import { animated } from "@react-spring/web";
 import { BaseballButton } from "./ui_components/Button";
 import { PlayerCard } from "./ui_components/PlayerCard";
-import RainingDeck, { TIME_TO_MAKE_IT_RAIN } from "./ui_components/RainingDeck";
-import { destroySession, getRefreshesLeft } from "../../api/sessions/methods";
+import RainingDeck from "./ui_components/RainingDeck";
+import { destroySession } from "../../api/sessions/methods";
 import { useHandleGameScore } from "../hooks/useHandleGameScore";
 import { useCardSlideSpring } from "../hooks/useCardSlideSpring";
 import ScoreIcon from "../../assets/war-games-score-icon.png";
