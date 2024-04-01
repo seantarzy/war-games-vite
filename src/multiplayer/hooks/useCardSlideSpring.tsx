@@ -28,7 +28,7 @@ export const useCardSlideSpring = ({
   });
 
   const oppWindowWidthSlideTravel = window.innerWidth > 768 ? "30vw" : "21vw";
-  const oppWindowHeightSlideTravel = window.innerWidth > 768 ? "12vh" : "8vh";
+  const oppWindowHeightSlideTravel = window.innerWidth > 768 ? "12vh" : "-5vh";
 
   const opponentSlideIn = useSpring({
     to: {

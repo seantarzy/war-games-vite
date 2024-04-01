@@ -178,7 +178,7 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
   const MySide = memo(() => {
     function MyButtonSet() {
       return (
-        <div className="flex flex-col gap-4 self-center max-w-64">
+        <div className="flex flex-col gap-4 self-center max-w-32 md:max-w-64">
           <div className="text-white text-center bg-red-500 rounded-xl">
             Refreshes left: {refreshesLeft}
           </div>
@@ -211,10 +211,10 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
     }
 
     return (
-      <div className="flex m-5 self-end justify-between">
+      <div className="flex m-5 self-end justify-between ml-32 md:ml-0">
         {!currentSessionCard && <MyButtonSet />}
         {cardDrawn ? (
-          <div className="ml-20">
+          <div className="ml-4 md:ml-20">
             <animated.div style={currentSlideIn}>
               <PlayerCard
                 player={cardDrawn}
@@ -290,7 +290,7 @@ export default function MultiplayerGame({ gameId }: { gameId: number }) {
 
   function BattleField() {
     return (
-      <div className="flex flex-col justify-center items-center h-full">
+      <div className="absolute md:relative md:bottom-auto md:flex md:flex-col md:justify-center md:items-center md:h-full">
         {battleReady && (
           <AnimatedText text={animatedText} roundWinner={roundWinner} />
         )}
