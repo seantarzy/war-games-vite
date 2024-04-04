@@ -139,8 +139,8 @@ function ComputerMode() {
           />
           <BattleField />
           <UserArea
-            dealCard={dealCard}
-            userPlayer={userPlayer}
+            onDealCard={dealCard}
+            userPlayer={userPlayer as Card}
             battleInSession={battleInSession}
             flip={flip}
             score={userScore + opponentScore}

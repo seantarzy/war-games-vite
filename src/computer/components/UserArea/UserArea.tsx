@@ -1,9 +1,10 @@
 import { BaseballButton } from "../../../multiplayer/components/ui_components/Button";
+import { Card } from "../../../multiplayer/types";
 import CardDeck from "../CardDeck/CardDeck";
 import PlayerCard from "../PlayerCard/PlayerCard";
 
 function UserArea({
-  dealCard,
+  onDealCard,
   userPlayer,
   flip,
   cardsRevealed,
@@ -11,8 +12,8 @@ function UserArea({
   battleInSession,
   gameOver,
 }: {
-  dealCard: any;
-  userPlayer: any;
+  onDealCard: () => void;
+  userPlayer: Card;
   flip: boolean;
   cardsRevealed: boolean;
   gameStart: boolean;
@@ -27,10 +28,11 @@ function UserArea({
         {!gameOver && (
           <BaseballButton
             disabled={!btnEnabled}
-            onClick={dealCard}
-            className="md:w-40 w-20 md:h-auto h-10 text-sm md:text-inherit"
+            onClick={onDealCard}
+            excludeIcon={true}
+            className="md:w-40 w-20 md:h-auto h-10 text-sm md:text-inherit "
           >
-            <p>Deal Card</p>
+            <div className="">Deal Card</div>
           </BaseballButton>
         )}
       </div>
