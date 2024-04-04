@@ -2,11 +2,13 @@ export function BaseballButton({
   disabled,
   children,
   className = "",
+  excludeIcon = false,
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   disabled: boolean;
   children: React.ReactNode;
   className?: string;
+  excludeIcon?: boolean;
 }) {
   return (
     <button
@@ -16,7 +18,7 @@ export function BaseballButton({
       } transition duration-150 ease-in-out ${className}`}
       {...rest}
     >
-      <BaseballIcon className="mr-4" />
+      {!excludeIcon && <BaseballIcon className="mr-4" />}
       {children}
     </button>
   );

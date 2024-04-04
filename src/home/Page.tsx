@@ -36,7 +36,7 @@ export default function HomePage() {
       <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-2 lg:text-left gap-16 text-white p-4 text-md">
         <a
           href="/singleplayer"
-          className="group rounded-lg border border-transparent px-2 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30  bg-slate-600"
+          className="group rounded-lg border border-transparent px-2 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30  bg-slate-600 flex flex-col items-center justify-center"
           rel="noopener noreferrer"
         >
           <h2 className={`mb-3 md:text-2xl font-semibold`}>
@@ -45,14 +45,14 @@ export default function HomePage() {
               -&gt;
             </span>
           </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
+          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-center`}>
             Play against the computer in a game of War.
           </p>
         </a>
 
         <a
           href="/multiplayer"
-          className="group rounded-lg border border-transparent px-5 py-2 md:py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30  bg-slate-600"
+          className="group rounded-lg border border-transparent px-5 py-2 md:py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30  bg-slate-600 flex flex-col items-center justify-center"
           rel="noopener noreferrer"
         >
           <h2 className={`mb-3 md:text-2xl font-semibold`}>
@@ -61,7 +61,7 @@ export default function HomePage() {
               -&gt;
             </span>
           </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
+          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-center`}>
             Play a friend in a game of War.
           </p>
         </a>
