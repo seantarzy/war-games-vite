@@ -57,6 +57,12 @@ export default function MultiplayerLobby({
     // subscribe to the game channel
   };
 
+  const backFromJoin = (e: FormEvent) => {
+    e.preventDefault();
+    setClickedJoin(false);
+    setGameCode("");
+  };
+
   function InitialLobby() {
     return (
       <div className="flex flex-col items-center justify-center">
@@ -75,6 +81,14 @@ export default function MultiplayerLobby({
                 />
                 <BaseballButton disabled={false} type="submit" className="h-14">
                   Join Game
+                </BaseballButton>
+
+                <BaseballButton
+                  disabled={false}
+                  onClick={backFromJoin}
+                  className="h-14"
+                >
+                  Back
                 </BaseballButton>
               </div>
             </form>
