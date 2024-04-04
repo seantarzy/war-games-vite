@@ -2,7 +2,7 @@ import { BaseballButton } from "../../../multiplayer/components/ui_components/Bu
 import { Card } from "../../../multiplayer/types";
 import CardDeck from "../CardDeck/CardDeck";
 import PlayerCard from "../PlayerCard/PlayerCard";
-
+import { useIsMobile } from "../../../shared/hooks/useIsMobile";
 function UserArea({
   onDealCard,
   userPlayer,
@@ -22,14 +22,15 @@ function UserArea({
   gameOver: boolean;
 }) {
   const btnEnabled = cardsRevealed || !gameStart;
+  const isMobile = useIsMobile();
   return (
     <>
-      <div className="fixed top-1/3 left-2/4 z-[1000] md:top-2/3 md:left-3/4 ">
+      <div className="fixed top-1/3 left-1/2 z-[1000] md:top-2/3 md:left-3/4 mt-4">
         {!gameOver && (
           <BaseballButton
             disabled={!btnEnabled}
             onClick={onDealCard}
-            excludeIcon={true}
+            excludeIcon={isMobile}
             className="md:w-40 w-20 md:h-auto h-10 text-sm md:text-inherit "
           >
             <div className="">Deal Card</div>
