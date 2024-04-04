@@ -160,8 +160,17 @@ export default function MultiplayerLobby({
   }
 
   return (
-    <div>
+    <div className="flex flex-col gap-12 justify-center items-center">
       {gameStarted && sessionType == "host" ? <WaitingLobby /> : InitialLobby()}
+      <BaseballButton
+        disabled={false}
+        onClick={() => {
+          window.location.href = "/";
+        }}
+        className="w-40 h-12"
+      >
+        Home
+      </BaseballButton>
     </div>
   );
 }

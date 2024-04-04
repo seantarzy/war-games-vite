@@ -3,11 +3,11 @@ import SeanTarzyLogo from "../assets/sean-tarzy-logo.webp";
 import "../App.css";
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24 background-image">
+    <main className="flex min-h-screen flex-col items-center justify-between p-24 background-image h-[100%] w-[100%]">
       <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
         <div className="hidden md:flex fixed bottom-0 left-0 h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
           <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
+            className="pointer-events-none flex place-items-center gap-2 md:p-8 lg:pointer-events-auto lg:p-0"
             href="https://seantarzy.com"
             target="_blank"
             rel="noopener noreferrer"
@@ -33,14 +33,13 @@ export default function HomePage() {
         />
       </div>
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-2 lg:text-left gap-16 text-white">
+      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-2 lg:text-left gap-16 text-white p-4 text-md">
         <a
           href="/singleplayer"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30  bg-slate-600"
-          target="_blank"
+          className="group rounded-lg border border-transparent px-2 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30  bg-slate-600"
           rel="noopener noreferrer"
         >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
+          <h2 className={`mb-3 md:text-2xl font-semibold`}>
             Play Computer{" "}
             <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
               -&gt;
@@ -53,12 +52,11 @@ export default function HomePage() {
 
         <a
           href="/multiplayer"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30  bg-slate-600"
-          target="_blank"
+          className="group rounded-lg border border-transparent px-5 py-2 md:py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30  bg-slate-600"
           rel="noopener noreferrer"
         >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Play Multiplayer{" "}
+          <h2 className={`mb-3 md:text-2xl font-semibold`}>
+            Play Multiplayer
             <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
               -&gt;
             </span>

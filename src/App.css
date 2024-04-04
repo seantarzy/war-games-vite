@@ -1,10 +1,8 @@
 #root {
-  max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
   height: 100%;
-  display: flex;
+  display: contents;
   width: 100%;
 }
 .background-image {
@@ -72,7 +70,6 @@
 }
 
 .deck {
-  background: url("./assets/war-games-card-deck.png");
   background-size: cover;
   height: 200px;
   width: 120px;
