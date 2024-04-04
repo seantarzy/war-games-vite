@@ -28,7 +28,7 @@ function UserArea({
           <BaseballButton
             disabled={!btnEnabled}
             onClick={dealCard}
-            className="md:w-40 w-20 md:h-auto h-12"
+            className="md:w-40 w-20 md:h-auto h-10 text-sm md:text-inherit"
           >
             <p>Deal Card</p>
           </BaseballButton>

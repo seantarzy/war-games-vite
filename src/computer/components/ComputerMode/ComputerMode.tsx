@@ -115,15 +115,15 @@ function ComputerMode() {
     <div className="h-full w-full">
       {appUp ? (
         <>
-          <div className="fixed top-16 left-16">
+          <div className="fixed top-16 left-16 hidden md:block ">
             <BaseballButton
               disabled={false}
-              className="w-40 h-20"
+              className="w-40 h-12"
               onClick={() => {
                 window.location.href = "/";
               }}
             >
-              Back to Home
+              Home
             </BaseballButton>
           </div>
           <div className="flex justify-center">
