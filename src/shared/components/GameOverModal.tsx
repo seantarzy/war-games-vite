@@ -25,7 +25,7 @@ const GameOverModal = ({
       onClick={onClose}
     >
       <div
-        className="bg-slate-400 p-4 rounded-lg shadow-lg flex flex-col items-center"
+        className="bg-slate-400 p-4 rounded-lg shadow-lg flex flex-col items-center w-4/5 md:w-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {rematchRequested ? (

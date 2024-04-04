@@ -7,6 +7,13 @@
   display: flex;
   width: 100%;
 }
+.background-image {
+  background-image: url("../assets/war-games-bg-3.webp");
+  background-size: cover;
+  background-position: center;
+  width: 100vw;
+  height: 100vh;
+}
 
 .logo {
   height: 6em;
@@ -37,9 +44,298 @@
 }
 
 .card {
-  padding: 2em;
+  width: 200px;
+  height: 300px;
 }
 
 .read-the-docs {
   color: #888;
+}
+
+.battle-field {
+  height: 350px;
+  width: 200px;
+}
+.deal-card-button {
+  font-size: 100px;
+  flex: 1;
+  font-weight: bold;
+}
+
+.deal-card-wrapper {
+  position: absolute;
+  left: 40%;
+  top: 75%;
+  height: 100px;
+  width: 300px;
+  font-weight: bold;
+}
+
+.deck {
+  background: url("./assets/war-games-card-deck.png");
+  background-size: cover;
+  height: 200px;
+  width: 120px;
+}
+
+.App-link {
+  color: #61dafb;
+}
+.section-title {
+  font-size: 80px;
+}
+.menu-button {
+  height: 80px;
+  width: 200px;
+}
+
+.user-deck {
+  margin-bottom: -150px;
+  margin-right: 30px;
+}
+.main-menu-wrapper {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* display: grid; */
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.user-player-card {
+  animation: cardSlide 2s forwards;
+}
+
+.baseball-card-front {
+  border: 5px solid black;
+  transition: transform 0.4s;
+  transform-style: preserve-3d;
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+}
+
+.baseball-card-front-with-stats {
+  -moz-transform: scale(-1, 1);
+  -webkit-transform: scale(-1, 1);
+  -o-transform: scale(-1, 1);
+  -ms-transform: scale(-1, 1);
+  transform: scale(-1, 1);
+  transform: rotateY(-180deg);
+}
+.text-flip {
+  -webkit-transform: scaleX(-1);
+  transform: scaleX(-1);
+}
+.baseball-card-back {
+  margin: ".25rem";
+  transform: rotateY(-180deg);
+}
+
+.card-image {
+  border: 5px solid black;
+  height: 100%;
+  width: 100%;
+}
+
+.feedback-text-win {
+  animation: feedbackFade 2s;
+  color: green;
+  position: absolute;
+  top: 200px;
+  left: 300px;
+  animation-fill-mode: forwards;
+}
+.feedback-text-loss {
+  animation: feedbackFade 2s;
+  color: red;
+  position: absolute;
+  top: 200px;
+  left: 300px;
+  animation-fill-mode: forwards;
+}
+
+.loading {
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  margin-right: -50%;
+  margin-bottom: 50%;
+}
+.loading-gif {
+  height: 200%;
+  width: 200%;
+}
+
+.computer-player-card {
+  animation: cardSlide2 2s forwards;
+}
+
+.baseball-card-full-stats {
+  overflow-y: auto;
+  height: 300px;
+  width: 150px;
+  transition: transform 0.4s;
+  transform-style: preserve-3d;
+  border: solid black 5px;
+  text-size-adjust: small;
+  text-overflow: ellipsis;
+  background-color: bisque;
+}
+
+.swal-popup {
+  width: 50%;
+}
+
+.stats {
+  font-size: 20px;
+  display: grid;
+}
+.coming-soon-text {
+  animation: regularFadeIn 2s;
+}
+
+@keyframes cardSlide {
+  from {
+    transform: translateX(0%) translateY(0%);
+  }
+  to {
+    transform: translateX(-250%) translateY(-100%);
+  }
+}
+@keyframes feedbackFade {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes regularFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cardSlide2 {
+  from {
+    transform: translateX(0%) translateY(0%);
+  }
+  to {
+    transform: translateX(250%) translateY(120%);
+  }
+}
+@keyframes mobileCardSlide {
+  from {
+    transform: translateX(0%) translateY(0%);
+  }
+  to {
+    transform: translateX(-95%) translateY(-180%);
+  }
+}
+@keyframes mobileCardSlide2 {
+  from {
+    transform: translateX(0%) translateY(0%);
+  }
+  to {
+    transform: translateX(10%) translateY(20%);
+  }
+}
+
+@media (max-width: 767px) {
+  .baseball-card-full-stats {
+    overflow-y: auto;
+    height: 300px;
+    width: 130px;
+    transition: transform 0.4s;
+    transform-style: preserve-3d;
+    border: solid black 5px;
+    text-size-adjust: small;
+    text-overflow: ellipsis;
+    background-color: bisque;
+  }
+  .loading {
+    position: absolute;
+    top: 25%;
+    right: 50px;
+    margin-bottom: 50%;
+  }
+  .loading-gif {
+    height: 50%;
+    width: 55%;
+  }
+
+  .deal-card-wrapper {
+    /* position: absolute; */
+    left: 20%;
+    top: 50%;
+    height: 60px;
+    width: 250px;
+    font-weight: bold;
+  }
+  .user-player-card {
+    /* border: 5px solid black; */
+    top: -150px;
+    animation: mobileCardSlide 2s forwards;
+  }
+
+  .computer-player-card {
+    animation: mobileCardSlide2 2s forwards;
+  }
+
+  .feedback-text-win {
+    animation: feedbackFade 2s;
+    color: green;
+    position: absolute;
+    top: 200px;
+    left: 200px;
+    animation-fill-mode: forwards;
+  }
+  .feedback-text-loss {
+    animation: feedbackFade 2s;
+    color: red;
+    position: absolute;
+    top: 200px;
+    left: 200px;
+    animation-fill-mode: forwards;
+  }
+
+  .deal-card-button {
+    font-size: 50px;
+    flex: 1;
+    font-weight: bold;
+  }
+
+  .deal-card-wrapper {
+    position: absolute;
+    left: 40%;
+    top: 25%;
+    height: 50px;
+    width: 200px;
+    font-weight: bold;
+  }
+  .card {
+    font-size: small;
+    width: 120px;
+    height: 160px;
+  }
+  .fixed-button {
+    position: fixed; /* Keeps the button fixed */
+    top: 50%; /* Adjust this value to place it where you want */
+    left: 50%; /* Adjust this value to center it as needed */
+    transform: translate(-50%, -50%); /* Centers the button */
+    z-index: 1000; /* Ensures it stays on top */
+  }
 }
