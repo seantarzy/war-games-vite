@@ -25,13 +25,13 @@ function UserArea({
   const isMobile = useIsMobile();
   return (
     <>
-      <div className="fixed top-3/4 left-1/2 z-[1000] md:top-2/3 md:left-3/4 mt-4">
+      <div className="absolute top-[80%] left-1/4 z-[1000] md:top-2/3  md:left-3/4 mt-4 md:translate-x-0 translate-x-[-1/2]">
         {!gameOver && (
           <BaseballButton
             disabled={!btnEnabled}
             onClick={onDealCard}
             excludeIcon={isMobile}
-            className="md:w-40 w-20 md:h-auto h-10 text-sm md:text-inherit "
+            className="w-40 md:h-auto h-12 text-sm md:text-inherit "
           >
             <div className="">Deal Card</div>
           </BaseballButton>
