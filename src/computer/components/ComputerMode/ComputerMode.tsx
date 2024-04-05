@@ -159,10 +159,10 @@ function ComputerMode() {
         isOpen={gameWinner !== null}
         winner={gameWinner || ""}
         onRestart={refreshPage}
-        onExit={refreshPage}
+        onExit={() => (window.location.href = "/")}
         onClose={() => setGameWinner(null)}
-        winnerScore={userScore}
-        loserScore={opponentScore}
+        winnerScore={gameWinner === "user" ? userScore : opponentScore}
+        loserScore={gameWinner === "user" ? opponentScore : userScore}
       />
     </div>
   );
