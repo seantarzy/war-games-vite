@@ -247,7 +247,8 @@
     transform: translateX(0%) translateY(0%);
   }
   to {
-    transform: translateX(10%) translateY(40%);
+    transform: translateX(30%) translateY(40%);
+
   }
 }
 
