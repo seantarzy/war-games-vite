@@ -25,7 +25,7 @@ function UserArea({
   const isMobile = useIsMobile();
   return (
     <>
-      <div className="absolute bottom-[10%] left-1/4 z-[1000] md:top-2/3  md:left-3/4 md:translate-x-0 tanslate-x-[10px]">
+      <div className="absolute bottom-[2%] left-1/4 z-[1000] md:top-2/3  md:left-3/4 md:translate-x-0 tanslate-x-[10px]">
         {!gameOver && (
           <BaseballButton
             disabled={!btnEnabled}
