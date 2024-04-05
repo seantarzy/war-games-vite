@@ -154,10 +154,7 @@ function ComputerMode() {
           <h2>App is down for maintenance</h2>
         </div>
       ) : (
-        <div className="loading">
-          <h2>Getting Players...</h2>
-          <img src={Loading1} className="loading-gif" />
-        </div>
+        <div className="loading-blank"></div>
       )}
       <GameOverModal
         isOpen={gameWinner !== null}

@@ -239,7 +239,7 @@
     transform: translateX(0%) translateY(0%);
   }
   to {
-    transform: translateX(-95%) translateY(-180%);
+    transform: translateX(-95%) translateY(-186%);
   }
 }
 @keyframes mobileCardSlide2 {
