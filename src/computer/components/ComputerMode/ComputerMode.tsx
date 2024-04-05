@@ -3,7 +3,6 @@ import OpponentArea from "../OpponentArea/OpponentArea";
 import FeedbackText from "../FeedbackText/FeedbackText";
 import UserArea from "../UserArea/UserArea";
 import BattleField from "../BattleField/BattleField";
-import Loading1 from "../../../assets/loading1.gif";
 import { publicGetRandomPlayer } from "../../../api/players/methods";
 import { Card } from "../../../multiplayer/types";
 import { getHealthCheck } from "../../../api/base";
